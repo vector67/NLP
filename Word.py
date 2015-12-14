@@ -6,9 +6,9 @@ class Word:
 	def __init__(self, word, partsofspeech=None):
 		self.word = word
 		self.partsofspeech = partsofspeech if not(partsofspeech==None) else posinst.findpartsofspeech(word)
-		print word
 		self.definite = not((len(self.partsofspeech)>1))
-		
+	def getPOS(self):
+		return self.partsofspeech
 	def __repr__(self):
 		return "'"+self.word+(", a " if self.definite else ", which is probably one of: ")+", ".join([referencepartsofspeech[x] for x in self.partsofspeech])+"'"
 
