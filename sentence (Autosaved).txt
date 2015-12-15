@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<sentence>
+<nounphrase><pos>D</pos><pos>l</pos><pos>N</pos><pos>p</pos></nounphrase>
+<verbphrase required="True"><pos>V</pos><pos>t</pos><pos>i</pos><pos>v</pos></verbphrase>
+<directobject><phrase>nounphrase</phrase></directobject>
+<indirectobject><phrase>nounphrase</phrase></indirectobject>
+<…[PrepositionalPhrase]
