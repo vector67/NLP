@@ -1,7 +1,7 @@
 # coding=utf-8
 def findWords(word):
 	if(word in posinst.lines):
-		return posinst.lines[word]
+		return posinst.lines[word][:]
 	return "No words found"
 def createWord(word, pos, inflection, basicword = None, lesspreferred = 0, preferredword = None, equivalentword = None):
 	if(not(len(word)>0)):
@@ -46,6 +46,25 @@ def createWord(word, pos, inflection, basicword = None, lesspreferred = 0, prefe
 		return [Word(word,pos,inflection,basicword,lesspreferred,preferredword,equivalentword)]
 referencepartsofspeech = {'N':'Noun','p':'Plural','h':'Noun Phrase','V':'Verb usuary participle','t':'Transitive verb','i':'Intransitive verb','A':'Adjective','v':'Adverb','C':'Conjunction','P':'Preposition','!':'Interjection','r':'Pronoun','D':'Definite article','l':'Indefinite article','o':'Nominative'}
 POSFILE = 2 # 1=pos.txt, 2=2of12id.txt
+class WordPossibilities:
+	wordprobabilities = []
+	current = 0
+	def __init__(self, word):
+		self.wordprobabilities = []
+		justwords = findWords(word)
+		if(isinstance(justwords,list)):
+			probability = 1/len(justwords)
+			for w in justwords:
+				self.wordprobabilities.append([w,probability])
+	def __getitem__(self, key):
+		listtotake = []
+		for w in self.wordprobabilities:
+			listtotake.append(w[0])
+		return listtotake[key]
+	def __len__(self):
+		return len(self.wordprobabilities)
+	def __repr__(self):
+		return self.wordprobabilities.__repr__()
 class Word:
 	definite = False
 	word = "" # the string which represents the actual word
@@ -164,6 +183,7 @@ class PartsOfSpeech:
 						if(len(inflections)>0 and inflections[0]):
 							plural = createWord(inflections[0],"N",1,mainword)
 							self.addPOStoWord(plural)
+		#print self.lines['to']
 	def addPOStoWord(self,wordobject):
 		word = ""
 		if(isinstance(wordobject,Word)):
