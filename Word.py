@@ -3,6 +3,47 @@ def findWords(word):
 	if(word in posinst.lines):
 		return posinst.lines[word]
 	return "No words found"
+def createWord(word, pos, inflection, basicword = None, lesspreferred = 0, preferredword = None, equivalentword = None):
+	if(not(len(word)>0)):
+		return []
+	if(word[0]==" " or word[0]=="~" or (word[0]=="-" and len(word)>1 and not(word[1]==" ")) or word[0]=="(" or word[0]=="@"):
+		return createWord(word[1:],pos,inflection,basicword,lesspreferred,preferredword,equivalentword)
+	if(word[-1]==")"):
+		return createWord(word[:-1],pos,inflection,basicword,lesspreferred,preferredword,equivalentword)
+	if(word[0]=="-" and ((len(word)>1 and not(word[1]==" ")) or len(word)==1)):
+		if(isinstance(basicword,Word)):
+			word = basicword.word
+		else:
+			print "Big problems, basicword doesn't exist, but we need it because we are a dash" + basicword
+	if("/" in word):
+		equivalentwords = word.split(" / ")
+		equivalentword = createWord(equivalentwords[0], pos, inflection, basicword, 0, None, equivalentword)
+		returninglist = equivalentword
+		del equivalentwords[0]
+		for w in equivalentwords:
+			newwords = createWord(w, pos, inflection, basicword, lesspreferred, preferredword, equivalentword[0])
+			for neww in newwords:
+				equivalentword[0].equivalentword = neww
+			returninglist.extend(newwords)
+		#print returninglist
+		return returninglist
+	if(" " in word):
+		preferredwords = word.split(" ")
+		preferredword = createWord(preferredwords[0], pos, inflection,basicword,lesspreferred,preferredword,equivalentword)
+		returninglist = preferredword
+		del preferredwords[0]
+		for lpw in preferredwords:
+			returninglist.extend(createWord(lpw,pos,inflection,basicword,1,preferredword,equivalentword))
+		return returninglist
+	test = False
+	for i in word:
+		ordnum = ord(i.lower())
+		if(not(97<=ordnum<=122 or ordnum==39)):
+			test = True
+	if(test):
+		print word
+	else:
+		return [Word(word,pos,inflection,basicword,lesspreferred,preferredword,equivalentword)]
 referencepartsofspeech = {'N':'Noun','p':'Plural','h':'Noun Phrase','V':'Verb usuary participle','t':'Transitive verb','i':'Intransitive verb','A':'Adjective','v':'Adverb','C':'Conjunction','P':'Preposition','!':'Interjection','r':'Pronoun','D':'Definite article','l':'Indefinite article','o':'Nominative'}
 POSFILE = 2 # 1=pos.txt, 2=2of12id.txt
 class Word:
@@ -25,12 +66,9 @@ class Word:
 		#self.partsofspeech = partsofspeech if not(partsofspeech==None) else posinst.findpartsofspeech(word)
 		#self.definite = not((len(self.partsofspeech)>1))
 	def getPOS(self):
-		returning = ""
-		for x in inflections:
-			returning = returning + str(x.inflection)
-		return returning
+		return self.pos
 	def __repr__(self):
-		return "'"+self.word+(", the ")+str(self.pos)+","+str(self.inflection)+"'"
+		return "'"+self.word+(", the ")+str(self.pos)+","+str(self.inflection)+"'" + (" an inflection of "+self.basicword.word if isinstance(self.basicword,Word) else "")
 	
 class PartsOfSpeech:
 	def __init__(self):
@@ -60,60 +98,80 @@ class PartsOfSpeech:
 				if(len(parts)>2):
 					print "Bad things"
 				wordpos = parts[0].split(" ")
-				mainword = Word(wordpos[0], wordpos[1],0)
-				self.addPOStoWord(mainword.word,mainword)
+				mainword = createWord(wordpos[0], wordpos[1],0)
+				mainword = mainword[0]
+				self.addPOStoWord(mainword)
 				if(wordpos[0]=="be" or wordpos[0]=="@wit"):
 					if(wordpos[0]=="be"):
+						# Do the word be entirely manually, it is not worth writing generic code for one entry in the entire file
 						mainword = Word("be","V",0)
-						self.addPOStoWord("be",mainword)
+						self.addPOStoWord(mainword)
 						pasttense = Word("were","V",1,mainword)
-						self.addPOStoWord("were",pasttense)
+						self.addPOStoWord(pasttense)
 						pasttense2 = Word("been","V",1,mainword)
-						self.addPOStoWord("been",pasttense2)
+						self.addPOStoWord(pasttense2)
 						ingtense = Word("being","V",2,mainword)
-						self.addPOStoWord("being",ingtense)
+						self.addPOStoWord(ingtense)
 						present1 = Word("am","V",0,mainword)
-						self.addPOStoWord("am",present1)
+						self.addPOStoWord(present1)
 						present2 = Word("is","V",0,mainword)
-						self.addPOStoWord("is",present2)
+						self.addPOStoWord(present2)
 						present3 = Word("are","V",3,mainword)
-						self.addPOStoWord("are",present3)
-						
-					#do inflections for these words manually
-					pass
+						self.addPOStoWord(present3)
 				else:
+					# For all normal words split the part after the colon and call it the inflections
 					inflections = parts[1].split("  ")
 					if("|" in parts[1]):
-						#We do something else in this case
+						# We don't really know what to do yet if we get a pipe symbol
+						# We do something else in this case
 						pass
 					elif(wordpos[1]=="V" and len(parts[1])>0):
-						mode = 1
-						beforeing = []
-						ing = []
-						aftering = []
-						for word in inflections:
+						# The format for inflections is <past tense>  [<past participle>]  <-ing form>  <plural form>
+						# the ing form of a word always has "ing" at the end of it therefor we can use it as a marker
+						mode = 1 # 1 is before the ing word, 2 is after the ing wword
+						pasttense = 0 # 0 is if the past tense hasn't happened, becomes one when we get the past tense
+						for word in inflections: #Cycle through all the words
 							if(mode==1):
-								if(len(inflections)==3 and word=="-" and not(mode==2)):
+								#We are before the ing word
+								if(len(inflections)==3 and word=="-" and not(mode==2)): # This is a special test which checks if we have a dash where the ing word should be and then simply pretends that we found an ing word
 									mode=2
-								elif(word[-3:]=="ing" or word[-4:]=="ing)"):
-									ing.append(ing)
-									inflectedword = Word(word,"V",8,mainword)
-									self.addPOStoWord(word,inflectedword)
+								elif(word[-3:]=="ing" or word[-4:]=="ing)"): # Test if this is the ing word
+									inflectedword = createWord(word,"V",3,mainword)
+									self.addPOStoWord(inflectedword)
 									mode=2
 								else:
-									beforeing.append(word)
-									inflectedword = Word(word,"V",6,mainword)
+									if(pasttense == 0):
+										inflectedword = createWord(word,"V",1,mainword)
+										pasttense = 0
+									else:
+										inflectedword = createWord(word,"V",2,mainword)
 									#TODO: Fix this so that it correctly selects either 6 or 7 for the inflection type
-									self.addPOStoWord(word,inflectedword)
+									self.addPOStoWord(inflectedword)
 							elif(mode==2):
-								aftering.append(word)
-								inflectedword = Word(word,"V",9,mainword)
-								self.addPOStoWord(word,inflectedword)
-							
-						if(not(mode==2)):
-							print line
-			print self.lines
-	def addPOStoWord(self,word,wordobject):
+								inflectedword = createWord(word,"V",4,mainword)
+								self.addPOStoWord(inflectedword)
+					elif(wordpos[1]=="A"):
+						if(len(inflections)>1 and inflections[0]):
+							#check
+							erform = createWord(inflections[0],"A",1,mainword)
+							estform = createWord(inflections[1],"A",2,mainword)
+							self.addPOStoWord(erform)
+							self.addPOStoWord(estform)
+						elif(len(inflections)>0 and inflections[0]):
+							print "Problems with "+line
+					
+					elif(wordpos[1]=="N"):
+						if(len(inflections)>0 and inflections[0]):
+							plural = createWord(inflections[0],"N",1,mainword)
+							self.addPOStoWord(plural)
+	def addPOStoWord(self,wordobject):
+		word = ""
+		if(isinstance(wordobject,Word)):
+			word = wordobject.word
+		elif(isinstance(wordobject,list)):
+			for wo in wordobject:
+				self.addPOStoWord(wo)
+			return
 		if(word in self.lines):
 			self.lines[word].append(wordobject)
 		else:
