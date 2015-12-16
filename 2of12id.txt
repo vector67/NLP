@@ -1,4 +1,4 @@
-a p:
+a A: 
 aardvark N: aardvarks
 aback A:
 abacus N: abacuses (abaci)
@@ -3230,6 +3230,7 @@ bayou N: bayous
 bazaar N: bazaars
 bazooka N: bazookas
 be V: was (@wast)  were  been  being  am  are (@art)  is  are
+be v: am is are was were been
 beach N: beaches
 beach V: beached  beaching  beaches
 beachcomber N: beachcombers
@@ -5588,6 +5589,7 @@ camshaft N: camshafts
 can N: cans
 can V {be able}: could  -  can (@canst)
 can V {preserve}: canned  canning  cans
+can v:
 canal N: canals
 -canal V: canalled (canaled)  canalling (canaling)  canals
 canalization N: ~canalizations
@@ -8974,6 +8976,7 @@ couch V: couched  couching  couches
 cougar N: cougars | cougar
 cough N: coughs
 cough V: coughed  coughing  coughs
+could v:
 coulee N: coulees
 coulomb N: coulombs
 council N: councils
@@ -9969,6 +9972,7 @@ dapple N: dapples
 dapple V: dappled  dappling  dapples
 dare N: dares
 dare V: dared (@durst)  daring  dares (dare)
+dare v:
 daredevil A:
 daredevil N: daredevils
 daredevilry N: ~daredevilries
@@ -11100,6 +11104,7 @@ dictatorship N: dictatorships
 diction N: ~dictions
 dictionary N: dictionaries
 dictum N: dicta (dictums)
+did v:
 didactic A:
 didactically A:
 diddle V: diddled  diddling  diddles
@@ -11881,6 +11886,7 @@ djellabah N: djellabahs
 djinn N: djinns (djinn)
 do N: dos (-do's)
 do V: did (@didst)  done  doing  does (@dost @doth)
+do v:
 doable A:
 dobbin N: dobbins
 doberman N: dobermans
@@ -11917,6 +11923,7 @@ dodger N: dodgers
 dodo N: dodos (dodoes)
 doe N: doe | does
 doer N: doers
+does v:
 doeskin N: doeskins
 doff V: doffed  doffing  doffs
 dog N: dogs
@@ -17983,6 +17990,7 @@ hackney N: hackneys
 hackney V: hackneyed  hackneying  hackneys
 hacksaw N: hacksaws
 hackwork N: ~hackworks
+had v:
 haddock N: haddocks | haddock
 hadj N: hadjes
 hadji N: hadjis
@@ -18317,6 +18325,7 @@ hart N: harts | hart
 harvest N: harvests
 harvest V: harvested  harvesting  harvests
 harvester N: harvesters
+has v:
 hash N: hashes
 hash V: hashed  hashing  hashes
 hasheesh N: ~hasheeshes
@@ -18371,6 +18380,7 @@ hauntingly A:
 hauteur N: ~hauteurs
 have N: haves
 have V: had (@hadst)  having  has (@hast @hath)
+have v:
 haven N: havens
 -haven V: havened  havening  havens
 haversack N: haversacks
@@ -19722,6 +19732,7 @@ hysteric N: hysterics
 hysterical A:
 hysterically A:
 hysterics N:
+i N:
 iamb N: iambs
 iambic A:
 iambic N: iambics
@@ -24732,6 +24743,7 @@ maximum A:
 maximum N: maximums (maxima)
 may N: ~mays
 may V: might  -  may (@mayest @mayst)
+may v:
 maybe A:
 maybe N: maybes
 mayday N: maydays
@@ -25281,6 +25293,7 @@ mien N: miens
 -miff N: miffs
 miff V: miffed  miffing  miffs
 might N: ~mights
+might v:
 mightily A:
 mightiness N: ~mightinesses
 mighty A: mightier  mightiest
@@ -26445,6 +26458,7 @@ must A:
 must N: musts
 must V {have to}:
 -must V {powder}: musted  musting  musts
+must v:
 mustache N: mustaches
 mustached A:
 mustachio N: mustachios
@@ -26731,6 +26745,7 @@ nectarine N: nectarines
 nee A:
 need N: needs
 need V: needed  needing  needs
+need v:
 needful A:
 needfully A:
 neediness N: ~needinesses
@@ -28416,6 +28431,7 @@ ouch I:
 -ouch V: ouched  ouching  ouches
 -ought N: oughts
 ought V:
+ought v:
 ounce N: ounces
 our A:
 ours P:
@@ -36765,6 +36781,7 @@ shakiness N: ~shakinesses
 shaky A: shakier  shakiest
 shale N: ~shales
 shall V: should  -  shall (@shalt)
+shall v:
 shallot N: shallots
 shallow A: shallower  shallowest
 shallow N: shallows
@@ -37086,6 +37103,7 @@ shot N: shots | shot {bullet}
 shotgun A:
 shotgun N: shotguns
 shotgun V: shotgunned  shotgunning  shotguns
+should v:
 shoulder N: shoulders
 shoulder V: shouldered  shouldering  shoulders
 shout N: shouts
@@ -46160,6 +46178,7 @@ wiliness N: ~wilinesses
 will N: wills
 will V {future}: would (@wouldst)  -  will (@wilt)
 will V: willed  willing  wills
+will v:
 willful A:
 willfully A:
 willfulness N: ~willfulnesses
@@ -46549,6 +46568,7 @@ worthlessness N: ~worthlessnesses
 worthwhile A:
 worthy A: worthier  worthiest
 worthy N: worthies
+would v:
 wound N: wounds
 wound V: wounded  wounding  wounds
 wow I:

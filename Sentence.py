@@ -26,6 +26,15 @@ class Sentence:
 				self.words.append(Word.WordPossibilities(word))
 		else:
 			raise TypeError("Problems")
+		self.cullUselessInflections()
+
+	def cullUselessInflections(self):
+		for wordlist in self.words:
+			for word1 in wordlist:
+				for word2 in wordlist:
+					if(not(word1 is word2)):
+						if(word1.pos == word2.pos):
+							del wordlist[wordlist.index(word1)]
 	def __repr__(self):
 		return self.words.__repr__()
 	def findVerbs(self):
@@ -61,6 +70,7 @@ class Sentence:
 						if(w.pos=="p"):
 							possibleprepositions.append(w)
 		return possibleprepositions
+		
 	def decipherSentenceDefinition(self):
 		possibleprepositions = self.findPrepositions()
 		verbs = self.findVerbs()
@@ -72,12 +82,35 @@ class Sentence:
 		#	if(len(posswords)==1):
 		#		definiteverbs.append(posswords)
 		if(len(definiteverbs)==1):
-			print self.words[definiteverbs[0]]
-			print "found verb"
-		
-		for (w in self.words):
-			for wpos in w:
-				
+			pass #Found a verb
+		possibilities = self.recursivelyGetPossibilities(0,[])
+		print len(possibilities)
+		for possibility in possibilities:
+			verb = False
+			for word in possibility:
+				if(word.isVerb()):
+					verb = True
+			if(not(verb)):
+				del possibilities[possibilities.index(possibility)]
+		print len(possibilities)
+		return possibilities
+	
+	def recursivelyGetPossibilities(self, level, sofar):
+		returning = []
+		#print level
+		#print sofar
+		#print ""
+		for word in self.words[level]:
+			if(level==(len(self.words)-1)):
+				newar = sofar[:]
+				newar.append(word)
+				returning.append(newar)
+			else:
+				newar = sofar[:]
+				newar.append(word)
+				returning.extend(self.recursivelyGetPossibilities(level+1,newar))
+		return returning
+			
 class NounPhrase:
 	pass
 

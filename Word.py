@@ -3,8 +3,11 @@ def findWords(word):
 	if(word in posinst.lines):
 		return posinst.lines[word][:]
 	return "No words found"
+
 def createWord(word, pos, inflection, basicword = None, lesspreferred = 0, preferredword = None, equivalentword = None):
 	if(not(len(word)>0)):
+		return []
+	if((word[0]=="{" or word[-1]=="}") and not(" " in word)):
 		return []
 	if(word[0]==" " or word[0]=="~" or (word[0]=="-" and len(word)>1 and not(word[1]==" ")) or word[0]=="(" or word[0]=="@"):
 		return createWord(word[1:],pos,inflection,basicword,lesspreferred,preferredword,equivalentword)
@@ -15,8 +18,8 @@ def createWord(word, pos, inflection, basicword = None, lesspreferred = 0, prefe
 			word = basicword.word
 		else:
 			print "Big problems, basicword doesn't exist, but we need it because we are a dash" + basicword
-	if("/" in word):
-		equivalentwords = word.split(" / ")
+	if("/" in word or "|" in word):
+		equivalentwords = word.split(" / " if "/" in word else " | ")
 		equivalentword = createWord(equivalentwords[0], pos, inflection, basicword, 0, None, equivalentword)
 		returninglist = equivalentword
 		del equivalentwords[0]
@@ -44,8 +47,11 @@ def createWord(word, pos, inflection, basicword = None, lesspreferred = 0, prefe
 		print word
 	else:
 		return [Word(word,pos,inflection,basicword,lesspreferred,preferredword,equivalentword)]
+
 referencepartsofspeech = {'N':'Noun','p':'Plural','h':'Noun Phrase','V':'Verb usuary participle','t':'Transitive verb','i':'Intransitive verb','A':'Adjective','v':'Adverb','C':'Conjunction','P':'Preposition','!':'Interjection','r':'Pronoun','D':'Definite article','l':'Indefinite article','o':'Nominative'}
 POSFILE = 2 # 1=pos.txt, 2=2of12id.txt
+
+
 class WordPossibilities:
 	wordprobabilities = []
 	current = 0
@@ -56,15 +62,29 @@ class WordPossibilities:
 			probability = 1/len(justwords)
 			for w in justwords:
 				self.wordprobabilities.append([w,probability])
+	
 	def __getitem__(self, key):
 		listtotake = []
 		for w in self.wordprobabilities:
 			listtotake.append(w[0])
 		return listtotake[key]
+	
 	def __len__(self):
 		return len(self.wordprobabilities)
+	
 	def __repr__(self):
 		return self.wordprobabilities.__repr__()
+	
+	def index(self, key):
+		for w in self.wordprobabilities:
+			if(key in w):
+				return self.wordprobabilities.index(w)
+		return None
+	
+	def __delitem__(self, key):
+		del self.wordprobabilities[key]
+
+
 class Word:
 	definite = False
 	word = "" # the string which represents the actual word
@@ -74,6 +94,7 @@ class Word:
 	lesspreferred = 0 # 0 =fine, 1 = less preferred, 2 = even less preferred
 	preferredword = None # references the word that should be used instead of this one, only set if not(lesspreferred==0)
 	equivalentword = None # references the word that is equivalent
+	
 	def __init__(self, word, pos, inflection, basicword = None, lesspreferred = 0, preferredword = None, equivalentword = None):
 		self.word = word
 		self.pos = pos
@@ -84,11 +105,25 @@ class Word:
 		self.equivalentword = equivalentword
 		#self.partsofspeech = partsofspeech if not(partsofspeech==None) else posinst.findpartsofspeech(word)
 		#self.definite = not((len(self.partsofspeech)>1))
+	
 	def getPOS(self):
 		return self.pos
-	def __repr__(self):
-		return "'"+self.word+(", the ")+str(self.pos)+","+str(self.inflection)+"'" + (" an inflection of "+self.basicword.word if isinstance(self.basicword,Word) else "")
 	
+	def isVerb(self):
+		if(self.pos=="V"):
+			return True
+		return False
+	
+	def __repr__(self):
+		return self.word+" "+str(self.pos)#+","+str(self.inflection)+"'" + (" an inflection of "+self.basicword.word if isinstance(self.basicword,Word) else "")
+	
+	def __eq__(self, other):
+		return (isinstance(other, self.__class__) and self.__dict__ == other.__dict__)
+	
+	def __ne__(self, other):
+		return not self.__eq__(other)
+
+
 class PartsOfSpeech:
 	def __init__(self):
 		if(POSFILE==1):
@@ -137,14 +172,12 @@ class PartsOfSpeech:
 						self.addPOStoWord(present2)
 						present3 = Word("are","V",3,mainword)
 						self.addPOStoWord(present3)
+						auxillary = Word("be","v",0)
+						self.addPOStoWord(auxillary)
 				else:
 					# For all normal words split the part after the colon and call it the inflections
 					inflections = parts[1].split("  ")
-					if("|" in parts[1]):
-						# We don't really know what to do yet if we get a pipe symbol
-						# We do something else in this case
-						pass
-					elif(wordpos[1]=="V" and len(parts[1])>0):
+					if(wordpos[1]=="V" and len(parts[1])>0):
 						# The format for inflections is <past tense>  [<past participle>]  <-ing form>  <plural form>
 						# the ing form of a word always has "ing" at the end of it therefor we can use it as a marker
 						mode = 1 # 1 is before the ing word, 2 is after the ing wword
@@ -164,7 +197,6 @@ class PartsOfSpeech:
 										pasttense = 0
 									else:
 										inflectedword = createWord(word,"V",2,mainword)
-									#TODO: Fix this so that it correctly selects either 6 or 7 for the inflection type
 									self.addPOStoWord(inflectedword)
 							elif(mode==2):
 								inflectedword = createWord(word,"V",4,mainword)
@@ -178,12 +210,16 @@ class PartsOfSpeech:
 							self.addPOStoWord(estform)
 						elif(len(inflections)>0 and inflections[0]):
 							print "Problems with "+line
-					
 					elif(wordpos[1]=="N"):
 						if(len(inflections)>0 and inflections[0]):
 							plural = createWord(inflections[0],"N",1,mainword)
 							self.addPOStoWord(plural)
-		#print self.lines['to']
+					else:
+						if(len(inflections)>0):
+							pass
+							#print line
+		#print self.lines['be']
+	
 	def addPOStoWord(self,wordobject):
 		word = ""
 		if(isinstance(wordobject,Word)):
@@ -196,6 +232,7 @@ class PartsOfSpeech:
 			self.lines[word].append(wordobject)
 		else:
 			self.lines[word] = [wordobject]
+	
 	def findpartsofspeech(self, word):
 		if(word in self.lines):
 			return self.lines[word]
